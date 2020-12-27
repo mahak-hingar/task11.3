@@ -1,0 +1,54 @@
+- hosts: all
+  vars_prompt:
+        - name: dr
+          prompt: "enter the name of document root"
+          private: no
+        - name: dir
+          prompt: " which name you want to give?"
+  tasks:
+        - file:
+            state: directory
+            path: "/{{dir}}"
+        - mount:
+            src: "/dev/cdrom"
+            path: "/{{dir}}"
+            state: mounted
+            fstype: "iso9660"
+        - yum_repository: 
+            baseurl: "/{{dir}}/AppStream"
+            name: "dvd1"
+            description: "myyumdvd"
+            gpgcheck: no
+        - yum_repository:
+            baseurl: "/{{dir}}/BaseOS"
+            name: "dvd2"
+            description: "myyumdvd"
+            gpgcheck: no
+        - file:
+            state: directory
+            path: "/var/www/{{dr}}"
+
+        - package:
+            name: httpd 
+            state: present
+        - copy: 
+            src: "web.html"
+            dest: "/var/www/{{dr}}/web.html"
+        - template: 
+            src: "httpd.conf"
+            dest: "/etc/httpd/conf.d/httpd.conf"
+           
+          notify: restart httpd
+             
+        - firewalld:
+            port: "8080/tcp"
+            state: enabled
+            permanent: yes
+            immediate: yes
+  handlers: 
+        - name: restart httpd
+          service:
+            name: httpd
+            state: restarted
+            enabled: yes
+

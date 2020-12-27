@@ -1,0 +1,2 @@
+
+192.168.43.191 ansible_ssh_user=root ansible_ssh_pass=mhk ssh_connection=ssh
